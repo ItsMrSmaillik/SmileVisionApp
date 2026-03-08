@@ -1,0 +1,97 @@
+{
+  "entities": {
+    "AppState": {
+      "title": "AppState",
+      "description": "Global application state including theme and winner.",
+      "type": "object",
+      "properties": {
+        "theme": {
+          "type": "string",
+          "description": "The current theme of the application."
+        },
+        "winnerPost": {
+          "type": "string",
+          "description": "Special post for the winner."
+        },
+        "winnerImage": {
+          "type": "string",
+          "description": "URL for the winner's image."
+        }
+      }
+    },
+    "NewsPost": {
+      "title": "NewsPost",
+      "description": "A news post, typically emojis.",
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "description": "The content of the news post."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Optional image URL for the news post."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the post was created."
+        }
+      },
+      "required": ["content", "createdAt"]
+    },
+    "Participant": {
+      "title": "Participant",
+      "description": "A contestant in SmileVision.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the participant/artist."
+        },
+        "country": {
+          "type": "string",
+          "description": "The country they represent."
+        },
+        "song": {
+          "type": "string",
+          "description": "The name of their song."
+        },
+        "emoji": {
+          "type": "string",
+          "description": "An emoji representing the participant or country."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Optional image URL for the participant."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the participant was added."
+        }
+      },
+      "required": ["name", "country", "song", "emoji", "createdAt"]
+    }
+  },
+  "firestore": {
+    "appState/{docId}": {
+      "schema": {
+        "$ref": "#/entities/AppState"
+      },
+      "description": "Singleton document for global app state. Document ID is usually 'global'."
+    },
+    "news/{postId}": {
+      "schema": {
+        "$ref": "#/entities/NewsPost"
+      },
+      "description": "Collection of news posts."
+    },
+    "participants/{participantId}": {
+      "schema": {
+        "$ref": "#/entities/Participant"
+      },
+      "description": "Collection of SmileVision participants."
+    }
+  }
+}

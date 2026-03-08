@@ -1,0 +1,5 @@
+{
+  "name": "SmileVision",
+  "description": "A Eurovision simulator app with real-time news, themes, and winner announcements.",
+  "requestFramePermissions": []
+}

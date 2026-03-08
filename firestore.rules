@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: appState
+    // Document ID: 'global'
+    // Fields:
+    //   - theme: string (optional, max 50 chars)
+    //   - winnerPost: string (optional, max 500 chars)
+    //   - winnerImage: string (optional, max 2000 chars)
+    //
+    // Collection: news
+    // Document ID: auto-generated
+    // Fields:
+    //   - content: string (required, max 500 chars)
+    //   - imageUrl: string (optional, max 2000 chars)
+    //   - createdAt: timestamp (required)
+    //
+    // Collection: participants
+    // Document ID: auto-generated
+    // Fields:
+    //   - name: string (required, max 100 chars)
+    //   - country: string (required, max 100 chars)
+    //   - song: string (required, max 100 chars)
+    //   - emoji: string (required, max 20 chars)
+    //   - imageUrl: string (optional, max 2000 chars)
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.email == "matvey.zingaliuk@gmail.com" && request.auth.token.email_verified == true;
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidAppState(data) {
+      return hasOnlyAllowedFields(['theme', 'winnerPost', 'winnerImage']) &&
+             (!('theme' in data) || (data.theme is string && data.theme.size() <= 50)) &&
+             (!('winnerPost' in data) || (data.winnerPost is string && data.winnerPost.size() <= 500)) &&
+             (!('winnerImage' in data) || (data.winnerImage is string && data.winnerImage.size() <= 2000));
+    }
+
+    function isValidNewsPost(data) {
+      return hasOnlyAllowedFields(['content', 'createdAt', 'imageUrl']) &&
+             data.content is string && data.content.size() > 0 && data.content.size() <= 500 &&
+             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 2000)) &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidParticipant(data) {
+      return hasOnlyAllowedFields(['name', 'country', 'song', 'emoji', 'createdAt', 'imageUrl']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.country is string && data.country.size() > 0 && data.country.size() <= 100 &&
+             data.song is string && data.song.size() > 0 && data.song.size() <= 100 &&
+             data.emoji is string && data.emoji.size() > 0 && data.emoji.size() <= 20 &&
+             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 2000)) &&
+             data.createdAt is timestamp;
+    }
+
+    match /appState/{docId} {
+      allow read: if true; // Publicly readable so everyone sees the theme
+      allow create: if isAdmin() && isValidAppState(request.resource.data);
+      allow update: if isAdmin() && isValidAppState(request.resource.data);
+      allow delete: if false;
+    }
+
+    match /news/{postId} {
+      allow read: if true; // Publicly readable
+      allow create: if isAdmin() && isValidNewsPost(request.resource.data);
+      allow update: if false; // News posts are immutable
+      allow delete: if isAdmin();
+    }
+
+    match /participants/{participantId} {
+      allow read: if true; // Publicly readable
+      allow create: if isAdmin() && isValidParticipant(request.resource.data);
+      allow update: if isAdmin() && isValidParticipant(request.resource.data);
+      allow delete: if isAdmin();
+    }
+  }
+}
