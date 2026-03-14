@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Fredoka", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Chewy", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Russo One", ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer utilities {

@@ -45,11 +45,11 @@ interface Participant {
 }
 
 const THEMES = [
-  { id: 'orange', bg: 'from-orange-400 to-amber-500', name: 'Sunny Orange' },
-  { id: 'blue', bg: 'from-blue-400 to-indigo-500', name: 'Ocean Blue' },
-  { id: 'pink', bg: 'from-pink-400 to-rose-500', name: 'Party Pink' },
-  { id: 'purple', bg: 'from-purple-400 to-fuchsia-500', name: 'Royal Purple' },
-  { id: 'green', bg: 'from-emerald-400 to-teal-500', name: 'Fresh Green' },
+  { id: 'orange', bg: 'from-orange-400 to-amber-500', name: 'Солнечный Оранжевый' },
+  { id: 'blue', bg: 'from-blue-400 to-indigo-500', name: 'Океанский Синий' },
+  { id: 'pink', bg: 'from-pink-400 to-rose-500', name: 'Яркий Розовый' },
+  { id: 'purple', bg: 'from-purple-400 to-fuchsia-500', name: 'Королевский Пурпурный' },
+  { id: 'green', bg: 'from-emerald-400 to-teal-500', name: 'Свежий Зеленый' },
 ];
 
 export default function App() {
@@ -191,7 +191,7 @@ export default function App() {
       setNewPostImage('');
     } catch (error) {
       console.error('Error posting news:', error);
-      alert('Failed to post news.');
+      alert('Не удалось опубликовать новость.');
     } finally {
       setIsSubmitting(false);
     }
@@ -224,7 +224,7 @@ export default function App() {
       setNewWinnerImage('');
     } catch (error) {
       console.error('Error setting winner:', error);
-      alert('Failed to set winner.');
+      alert('Не удалось выбрать победителя.');
     } finally {
       setIsSubmitting(false);
     }
@@ -271,7 +271,7 @@ export default function App() {
       setNewParticipant({ name: '', country: '', song: '', emoji: '', imageUrl: '' });
     } catch (error) {
       console.error('Error adding participant:', error);
-      alert('Failed to add participant.');
+      alert('Не удалось добавить участника.');
     } finally {
       setIsSubmitting(false);
     }
@@ -359,7 +359,7 @@ export default function App() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 1 }}
             >
-              Tuning the stage...
+              Настраиваем сцену...
             </motion.p>
           </div>
         </motion.div>
@@ -454,7 +454,7 @@ export default function App() {
                 
                 <h3 className="font-display text-3xl mb-4 text-yellow-100 uppercase tracking-widest flex items-center justify-center gap-2">
                   <Sparkles className="w-6 h-6 text-yellow-300" />
-                  Winner's Spotlight
+                  Победитель
                   <Sparkles className="w-6 h-6 text-yellow-300" />
                 </h3>
                 
@@ -484,7 +484,7 @@ export default function App() {
               activeTab === 'news' ? 'bg-white/30 shadow-md text-white' : 'text-white/60 hover:text-white/90 hover:bg-white/10'
             }`}
           >
-            📰 News
+            📰 Новости
           </button>
           <button
             onClick={() => setActiveTab('participants')}
@@ -492,7 +492,7 @@ export default function App() {
               activeTab === 'participants' ? 'bg-white/30 shadow-md text-white' : 'text-white/60 hover:text-white/90 hover:bg-white/10'
             }`}
           >
-            🎤 Participants
+            🎤 Участники
           </button>
         </div>
 
@@ -509,7 +509,7 @@ export default function App() {
               >
                 {news.length === 0 ? (
                   <div className="glass rounded-2xl p-8 text-center text-white/70">
-                    No news yet. Waiting for the smiles! 🌟
+                    Пока нет новостей. Ждем улыбок! 🌟
                   </div>
                 ) : (
                   news.map((post) => (
@@ -548,7 +548,7 @@ export default function App() {
               >
                 {participants.length === 0 ? (
                   <div className="glass rounded-2xl p-8 text-center text-white/70">
-                    No participants added yet. 🎤
+                    Участники еще не добавлены. 🎤
                   </div>
                 ) : (
                   participants.map((p) => (
@@ -612,7 +612,7 @@ export default function App() {
             >
               <div className="flex justify-between items-center mb-6">
                 <h2 className="font-display text-3xl flex items-center gap-2">
-                  <Crown className="w-6 h-6 text-yellow-300" /> Admin Control
+                  <Crown className="w-6 h-6 text-yellow-300" /> Панель управления
                 </h2>
                 <button 
                   onClick={() => setShowAdminPanel(false)}
@@ -626,7 +626,7 @@ export default function App() {
                 {/* Theme Selector */}
                 <section>
                   <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
-                    <Palette className="w-5 h-5" /> App Theme
+                    <Palette className="w-5 h-5" /> Тема приложения
                   </h3>
                   <div className="flex flex-wrap gap-3">
                     {THEMES.map((t) => (
@@ -648,14 +648,14 @@ export default function App() {
                 {/* Post News */}
                 <section>
                   <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
-                    <Send className="w-5 h-5" /> Post News
+                    <Send className="w-5 h-5" /> Опубликовать новость
                   </h3>
                   <form onSubmit={handlePostNews} className="flex flex-col gap-2">
                     <input
                       type="text"
                       value={newPostImage}
                       onChange={(e) => setNewPostImage(e.target.value)}
-                      placeholder="Image URL (optional)"
+                      placeholder="Ссылка на картинку (необязательно)"
                       className="glass-input rounded-xl px-4 py-2 text-sm"
                       maxLength={2000}
                     />
@@ -664,7 +664,7 @@ export default function App() {
                         type="text"
                         value={newPost}
                         onChange={(e) => setNewPost(e.target.value)}
-                        placeholder="Enter emojis or text..."
+                        placeholder="Введите текст или эмодзи..."
                         className="glass-input flex-1 rounded-xl px-4 py-3 text-2xl"
                         maxLength={500}
                       />
@@ -682,14 +682,14 @@ export default function App() {
                 {/* Set Winner */}
                 <section>
                   <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
-                    <Crown className="w-5 h-5" /> Announce Winner
+                    <Crown className="w-5 h-5" /> Объявить победителя
                   </h3>
                   <form onSubmit={handleSetWinner} className="flex flex-col gap-2">
                     <input
                       type="text"
                       value={newWinnerImage}
                       onChange={(e) => setNewWinnerImage(e.target.value)}
-                      placeholder="Winner Image URL (optional)"
+                      placeholder="Ссылка на картинку (необязательно)"
                       className="glass-input rounded-xl px-4 py-2 text-sm"
                       maxLength={2000}
                     />
@@ -698,7 +698,7 @@ export default function App() {
                         type="text"
                         value={newWinnerPost}
                         onChange={(e) => setNewWinnerPost(e.target.value)}
-                        placeholder="Winner emojis/text..."
+                        placeholder="Текст или эмодзи победителя..."
                         className="glass-input flex-1 rounded-xl px-4 py-3 text-xl"
                         maxLength={500}
                       />
@@ -707,7 +707,7 @@ export default function App() {
                         disabled={isSubmitting || !newWinnerPost.trim()}
                         className="glass-button rounded-xl px-4 flex items-center justify-center disabled:opacity-50"
                       >
-                        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Set'}
+                        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Сохранить'}
                       </button>
                     </div>
                   </form>
@@ -719,7 +719,7 @@ export default function App() {
                       }}
                       className="mt-2 text-sm text-red-300 hover:text-red-200 underline"
                     >
-                      Clear Winner
+                      Убрать победителя
                     </button>
                   )}
                 </section>
@@ -727,7 +727,7 @@ export default function App() {
                 {/* Add Participant */}
                 <section>
                   <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
-                    <Users className="w-5 h-5" /> Add Participant
+                    <Users className="w-5 h-5" /> Добавить участника
                   </h3>
                   <form onSubmit={handleAddParticipant} className="flex flex-col gap-3">
                     <div className="flex gap-2">
@@ -735,7 +735,7 @@ export default function App() {
                         type="text"
                         value={newParticipant.country}
                         onChange={(e) => setNewParticipant({...newParticipant, country: e.target.value})}
-                        placeholder="Country"
+                        placeholder="Страна"
                         className="glass-input flex-1 rounded-xl px-4 py-2"
                         maxLength={100}
                       />
@@ -743,7 +743,7 @@ export default function App() {
                         type="text"
                         value={newParticipant.emoji}
                         onChange={(e) => setNewParticipant({...newParticipant, emoji: e.target.value})}
-                        placeholder="Emoji"
+                        placeholder="Эмодзи"
                         className="glass-input w-24 rounded-xl px-4 py-2 text-center text-xl"
                         maxLength={20}
                       />
@@ -752,7 +752,7 @@ export default function App() {
                       type="text"
                       value={newParticipant.name}
                       onChange={(e) => setNewParticipant({...newParticipant, name: e.target.value})}
-                      placeholder="Artist Name"
+                      placeholder="Имя артиста"
                       className="glass-input w-full rounded-xl px-4 py-2"
                       maxLength={100}
                     />
@@ -760,7 +760,7 @@ export default function App() {
                       type="text"
                       value={newParticipant.song}
                       onChange={(e) => setNewParticipant({...newParticipant, song: e.target.value})}
-                      placeholder="Song Title"
+                      placeholder="Название песни"
                       className="glass-input w-full rounded-xl px-4 py-2"
                       maxLength={100}
                     />
@@ -768,7 +768,7 @@ export default function App() {
                       type="text"
                       value={newParticipant.imageUrl || ''}
                       onChange={(e) => setNewParticipant({...newParticipant, imageUrl: e.target.value})}
-                      placeholder="Image URL (optional)"
+                      placeholder="Ссылка на картинку (необязательно)"
                       className="glass-input w-full rounded-xl px-4 py-2"
                       maxLength={2000}
                     />
@@ -777,7 +777,7 @@ export default function App() {
                       disabled={isSubmitting || !newParticipant.name || !newParticipant.country || !newParticipant.song || !newParticipant.emoji}
                       className="glass-button rounded-xl py-3 flex items-center justify-center disabled:opacity-50 mt-1"
                     >
-                      {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Add Participant'}
+                      {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Добавить участника'}
                     </button>
                   </form>
                 </section>
@@ -788,7 +788,7 @@ export default function App() {
                     onClick={handleLogout}
                     className="w-full glass-button rounded-xl py-3 flex items-center justify-center gap-2 text-red-200 hover:text-red-100 hover:bg-red-500/20"
                   >
-                    <LogOut className="w-5 h-5" /> Sign Out
+                    <LogOut className="w-5 h-5" /> Выйти
                   </button>
                 </section>
               </div>
