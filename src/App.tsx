@@ -5,7 +5,9 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Heart, Send, Crown, Palette, LogOut, X, Loader2, Users, Music, Sparkles } from 'lucide-react';
+import { Heart, Send, Crown, Palette, LogOut, X, Loader2, Users, Music, Sparkles, Edit2, CheckCircle, Trash2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { db, auth } from './firebase';
 import { 
   collection, 
@@ -16,7 +18,8 @@ import {
   addDoc, 
   serverTimestamp, 
   setDoc,
-  deleteDoc
+  deleteDoc,
+  updateDoc
 } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
 
@@ -36,12 +39,14 @@ interface NewsPost {
 
 interface Participant {
   id: string;
+  email?: string;
   name: string;
   country: string;
   song: string;
   emoji: string;
   imageUrl?: string;
   createdAt: any;
+  status?: 'pending' | 'approved';
 }
 
 const THEMES = [
@@ -56,7 +61,7 @@ export default function App() {
   const [appState, setAppState] = useState<AppState>({ theme: 'orange', winnerPost: '' });
   const [news, setNews] = useState<NewsPost[]>([]);
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [activeTab, setActiveTab] = useState<'news' | 'participants'>('news');
+  const [activeTab, setActiveTab] = useState<'news' | 'participants' | 'apply'>('news');
   const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
@@ -69,8 +74,13 @@ export default function App() {
   const [newPostImage, setNewPostImage] = useState('');
   const [newWinnerPost, setNewWinnerPost] = useState('');
   const [newWinnerImage, setNewWinnerImage] = useState('');
-  const [newParticipant, setNewParticipant] = useState({ name: '', country: '', song: '', emoji: '', imageUrl: '' });
+  const [newParticipant, setNewParticipant] = useState({ email: '', name: '', country: '', song: '', emoji: '', imageUrl: '' });
+  const [editingParticipant, setEditingParticipant] = useState<Participant | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Apply form
+  const [applyForm, setApplyForm] = useState({ email: '', name: '', country: '', song: '', emoji: '', imageUrl: '' });
+  const [applySuccess, setApplySuccess] = useState(false);
 
   // Auth listener
   useEffect(() => {
@@ -286,6 +296,62 @@ export default function App() {
     }
   };
 
+  const handleApply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!applyForm.email || !applyForm.name || !applyForm.country) return;
+    
+    setIsSubmitting(true);
+    try {
+      const participantData: any = {
+        email: applyForm.email,
+        name: applyForm.name,
+        country: applyForm.country,
+        song: applyForm.song,
+        emoji: applyForm.emoji,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+      };
+      if (applyForm.imageUrl?.trim()) {
+        participantData.imageUrl = applyForm.imageUrl.trim();
+      }
+      await addDoc(collection(db, 'participants'), participantData);
+      setApplySuccess(true);
+      setApplyForm({ email: '', name: '', country: '', song: '', emoji: '', imageUrl: '' });
+      setTimeout(() => setApplySuccess(false), 5000);
+    } catch (error) {
+      console.error('Error applying:', error);
+      alert('Не удалось отправить заявку.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdateParticipant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingParticipant || !isAdmin) return;
+    
+    setIsSubmitting(true);
+    try {
+      const { id, ...data } = editingParticipant;
+      await updateDoc(doc(db, 'participants', id), data);
+      setEditingParticipant(null);
+    } catch (error) {
+      console.error('Error updating participant:', error);
+      alert('Не удалось обновить данные участника.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleApproveParticipant = async (id: string) => {
+    if (!isAdmin) return;
+    try {
+      await updateDoc(doc(db, 'participants', id), { status: 'approved' });
+    } catch (error) {
+      console.error('Error approving participant:', error);
+    }
+  };
+
   return (
     <AnimatePresence mode="wait">
       {(!isAuthReady || isAppLoading) ? (
@@ -296,9 +362,9 @@ export default function App() {
         >
           {/* Background animated elements */}
           <div className="absolute inset-0 z-0">
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
-            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-500/20 rounded-full blur-3xl" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-red-500/10 rounded-full blur-3xl" />
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[radial-gradient(circle,rgba(59,130,246,0.2)_0%,transparent_70%)] rounded-full" />
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[radial-gradient(circle,rgba(234,179,8,0.2)_0%,transparent_70%)] rounded-full" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[radial-gradient(circle,rgba(239,68,68,0.1)_0%,transparent_70%)] rounded-full" />
           </div>
 
           {/* Main Content */}
@@ -363,8 +429,8 @@ export default function App() {
 
       {/* Background decorative elements */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-white/5 blur-3xl"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-white/5 blur-3xl"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.05)_0%,transparent_70%)]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.05)_0%,transparent_70%)]"></div>
       </div>
 
       <div className="relative z-10 max-w-md mx-auto min-h-screen flex flex-col p-6">
@@ -457,7 +523,7 @@ export default function App() {
         <div className="flex gap-2 mb-6 p-1 glass rounded-2xl">
           <button
             onClick={() => setActiveTab('news')}
-            className={`flex-1 py-3 px-2 sm:px-4 rounded-xl font-display text-base sm:text-xl transition-all ${
+            className={`flex-1 py-3 px-1 sm:px-4 rounded-xl font-display text-xs sm:text-lg transition-all ${
               activeTab === 'news' ? 'bg-white/30 shadow-md text-white' : 'text-white/60 hover:text-white/90 hover:bg-white/10'
             }`}
           >
@@ -465,11 +531,19 @@ export default function App() {
           </button>
           <button
             onClick={() => setActiveTab('participants')}
-            className={`flex-1 py-3 px-2 sm:px-4 rounded-xl font-display text-base sm:text-xl transition-all ${
+            className={`flex-1 py-3 px-1 sm:px-4 rounded-xl font-display text-xs sm:text-lg transition-all ${
               activeTab === 'participants' ? 'bg-white/30 shadow-md text-white' : 'text-white/60 hover:text-white/90 hover:bg-white/10'
             }`}
           >
-            🎤 Участники
+            Участники
+          </button>
+          <button
+            onClick={() => setActiveTab('apply')}
+            className={`flex-1 py-3 px-1 sm:px-4 rounded-xl font-display text-xs sm:text-lg transition-all ${
+              activeTab === 'apply' ? 'bg-white/30 shadow-md text-white' : 'text-white/60 hover:text-white/90 hover:bg-white/10'
+            }`}
+          >
+            📝 Заявка
           </button>
         </div>
 
@@ -498,7 +572,18 @@ export default function App() {
                       {post.imageUrl && (
                         <img src={post.imageUrl} alt="News" className="w-full h-48 object-cover rounded-xl mb-4 shadow-md" referrerPolicy="no-referrer" />
                       )}
-                      <p className="text-3xl leading-relaxed">{post.content}</p>
+                      <div className="text-xl sm:text-2xl leading-relaxed markdown-body">
+                        <ReactMarkdown 
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            a: ({node, ...props}) => <a {...props} className="text-blue-300 underline hover:text-blue-200" target="_blank" rel="noopener noreferrer" />,
+                            strong: ({node, ...props}) => <strong {...props} className="font-bold text-white" />,
+                            em: ({node, ...props}) => <em {...props} className="italic text-white/90" />
+                          }}
+                        >
+                          {post.content}
+                        </ReactMarkdown>
+                      </div>
                       <span className="text-xs opacity-50 mt-3 block font-mono">
                         {post.createdAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
@@ -515,7 +600,7 @@ export default function App() {
                   ))
                 )}
               </motion.div>
-            ) : (
+            ) : activeTab === 'participants' ? (
               <motion.div 
                 key="participants"
                 initial={{ opacity: 0, x: 20 }}
@@ -523,12 +608,12 @@ export default function App() {
                 exit={{ opacity: 0, x: -20 }}
                 className="grid grid-cols-1 gap-4"
               >
-                {participants.length === 0 ? (
+                {participants.filter(p => p.status === 'approved' || !p.status).length === 0 ? (
                   <div className="glass rounded-2xl p-8 text-center text-white/70">
                     Участники еще не добавлены.
                   </div>
                 ) : (
-                  participants.map((p) => (
+                  participants.filter(p => p.status === 'approved' || !p.status).map((p) => (
                     <motion.div
                       key={p.id}
                       layout
@@ -565,6 +650,97 @@ export default function App() {
                       )}
                     </motion.div>
                   ))
+                )}
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="apply"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="glass rounded-2xl p-6"
+              >
+                <h3 className="font-display text-2xl mb-4 text-center">Подать заявку на участие</h3>
+                {applySuccess ? (
+                  <div className="text-center py-8">
+                    <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
+                    <p className="text-xl font-medium">Заявка успешно отправлена!</p>
+                    <p className="text-white/70 mt-2">Ожидайте подтверждения администратором.</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleApply} className="flex flex-col gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1 opacity-80">Email (обязательно)</label>
+                      <input
+                        type="email"
+                        required
+                        value={applyForm.email}
+                        onChange={(e) => setApplyForm({...applyForm, email: e.target.value})}
+                        className="glass-input w-full rounded-xl px-4 py-3"
+                        placeholder="ваша@почта.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1 opacity-80">Имя исполнителя (обязательно)</label>
+                      <input
+                        type="text"
+                        required
+                        value={applyForm.name}
+                        onChange={(e) => setApplyForm({...applyForm, name: e.target.value})}
+                        className="glass-input w-full rounded-xl px-4 py-3"
+                        placeholder="Например: Zdob și Zdub"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1 opacity-80">Страна (обязательно)</label>
+                      <input
+                        type="text"
+                        required
+                        value={applyForm.country}
+                        onChange={(e) => setApplyForm({...applyForm, country: e.target.value})}
+                        className="glass-input w-full rounded-xl px-4 py-3"
+                        placeholder="Например: Молдова"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1 opacity-80">Песня</label>
+                      <input
+                        type="text"
+                        value={applyForm.song}
+                        onChange={(e) => setApplyForm({...applyForm, song: e.target.value})}
+                        className="glass-input w-full rounded-xl px-4 py-3"
+                        placeholder="Название песни"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1 opacity-80">Эмодзи</label>
+                      <input
+                        type="text"
+                        value={applyForm.emoji}
+                        onChange={(e) => setApplyForm({...applyForm, emoji: e.target.value})}
+                        className="glass-input w-full rounded-xl px-4 py-3 text-2xl"
+                        placeholder="🎸"
+                        maxLength={10}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1 opacity-80">Ссылка на фото (необязательно)</label>
+                      <input
+                        type="url"
+                        value={applyForm.imageUrl}
+                        onChange={(e) => setApplyForm({...applyForm, imageUrl: e.target.value})}
+                        className="glass-input w-full rounded-xl px-4 py-3"
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <button 
+                      type="submit"
+                      disabled={isSubmitting || !applyForm.email || !applyForm.name || !applyForm.country}
+                      className="glass-button rounded-xl py-4 mt-2 font-bold text-lg flex items-center justify-center disabled:opacity-50"
+                    >
+                      {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Отправить заявку'}
+                    </button>
+                  </form>
                 )}
               </motion.div>
             )}
@@ -636,21 +812,20 @@ export default function App() {
                       className="glass-input rounded-xl px-4 py-2 text-sm"
                       maxLength={2000}
                     />
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
+                    <div className="flex flex-col gap-2">
+                      <textarea
                         value={newPost}
                         onChange={(e) => setNewPost(e.target.value)}
-                        placeholder="Введите текст или эмодзи..."
-                        className="glass-input flex-1 rounded-xl px-4 py-3 text-2xl"
-                        maxLength={500}
+                        placeholder="Введите текст (поддерживается Markdown)..."
+                        className="glass-input w-full rounded-xl px-4 py-3 text-lg min-h-[100px] resize-y"
+                        maxLength={2000}
                       />
                       <button 
                         type="submit"
                         disabled={isSubmitting || !newPost.trim()}
-                        className="glass-button rounded-xl px-4 flex items-center justify-center disabled:opacity-50"
+                        className="glass-button rounded-xl py-3 flex items-center justify-center disabled:opacity-50"
                       >
-                        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-5 h-5 mr-2" /> Опубликовать</>}
                       </button>
                     </div>
                   </form>
@@ -701,11 +876,134 @@ export default function App() {
                   )}
                 </section>
 
-                {/* Add Participant */}
+                {/* Applications & Participants Management */}
                 <section>
                   <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
-                    <Users className="w-5 h-5" /> Добавить участника
+                    <Users className="w-5 h-5" /> Управление участниками
                   </h3>
+                  
+                  {editingParticipant ? (
+                    <form onSubmit={handleUpdateParticipant} className="flex flex-col gap-3 glass p-4 rounded-2xl mb-4 border border-blue-400/30">
+                      <h4 className="font-medium text-blue-200 mb-2">Редактирование участника</h4>
+                      <input
+                        type="email"
+                        value={editingParticipant.email || ''}
+                        onChange={(e) => setEditingParticipant({...editingParticipant, email: e.target.value})}
+                        placeholder="Email"
+                        className="glass-input w-full rounded-xl px-4 py-2"
+                      />
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={editingParticipant.country}
+                          disabled
+                          className="glass-input flex-1 rounded-xl px-4 py-2 opacity-50 cursor-not-allowed"
+                          title="Страну изменить нельзя"
+                        />
+                        <input
+                          type="text"
+                          value={editingParticipant.emoji}
+                          onChange={(e) => setEditingParticipant({...editingParticipant, emoji: e.target.value})}
+                          placeholder="Эмодзи"
+                          className="glass-input w-24 rounded-xl px-4 py-2 text-center text-xl"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={editingParticipant.name}
+                        disabled
+                        className="glass-input w-full rounded-xl px-4 py-2 opacity-50 cursor-not-allowed"
+                        title="Имя исполнителя изменить нельзя"
+                      />
+                      <input
+                        type="text"
+                        value={editingParticipant.song}
+                        onChange={(e) => setEditingParticipant({...editingParticipant, song: e.target.value})}
+                        placeholder="Название песни"
+                        className="glass-input w-full rounded-xl px-4 py-2"
+                      />
+                      <input
+                        type="text"
+                        value={editingParticipant.imageUrl || ''}
+                        onChange={(e) => setEditingParticipant({...editingParticipant, imageUrl: e.target.value})}
+                        placeholder="Ссылка на картинку"
+                        className="glass-input w-full rounded-xl px-4 py-2"
+                      />
+                      <div className="flex gap-2 mt-2">
+                        <button 
+                          type="button"
+                          onClick={() => setEditingParticipant(null)}
+                          className="flex-1 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors"
+                        >
+                          Отмена
+                        </button>
+                        <button 
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="flex-1 py-2 rounded-xl bg-blue-500/40 hover:bg-blue-500/60 transition-colors flex items-center justify-center"
+                        >
+                          {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Сохранить'}
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Pending Applications */}
+                      {participants.filter(p => p.status === 'pending').length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium text-yellow-300">Новые заявки</h4>
+                          {participants.filter(p => p.status === 'pending').map(p => (
+                            <div key={p.id} className="glass p-3 rounded-xl flex flex-col gap-2 text-sm border border-yellow-400/30">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <p className="font-bold">{p.name} <span className="font-normal opacity-70">({p.country})</span></p>
+                                  <p className="opacity-80">{p.email}</p>
+                                  <p className="opacity-80">Песня: {p.song || '—'}</p>
+                                </div>
+                                <div className="flex gap-1">
+                                  <button onClick={() => handleApproveParticipant(p.id)} className="p-1.5 bg-green-500/20 hover:bg-green-500/40 rounded-lg text-green-200" title="Одобрить">
+                                    <CheckCircle className="w-4 h-4" />
+                                  </button>
+                                  <button onClick={() => setEditingParticipant(p)} className="p-1.5 bg-blue-500/20 hover:bg-blue-500/40 rounded-lg text-blue-200" title="Редактировать">
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                  <button onClick={() => handleDeleteParticipant(p.id)} className="p-1.5 bg-red-500/20 hover:bg-red-500/40 rounded-lg text-red-200" title="Удалить">
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Approved Participants */}
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-white/70">Одобренные участники</h4>
+                        {participants.filter(p => p.status === 'approved' || !p.status).map(p => (
+                          <div key={p.id} className="glass p-3 rounded-xl flex justify-between items-center text-sm">
+                            <div>
+                              <p className="font-bold">{p.name}</p>
+                              <p className="opacity-70 text-xs">{p.country}</p>
+                            </div>
+                            <div className="flex gap-1">
+                              <button onClick={() => setEditingParticipant(p)} className="p-1.5 bg-blue-500/20 hover:bg-blue-500/40 rounded-lg text-blue-200" title="Редактировать">
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => handleDeleteParticipant(p.id)} className="p-1.5 bg-red-500/20 hover:bg-red-500/40 rounded-lg text-red-200" title="Удалить">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </section>
+
+                {/* Add Participant (Manual) */}
+                <section className="pt-4 border-t border-white/10">
+                  <h3 className="text-sm font-medium mb-3 opacity-70">Добавить участника вручную</h3>
                   <form onSubmit={handleAddParticipant} className="flex flex-col gap-3">
                     <div className="flex gap-2">
                       <input

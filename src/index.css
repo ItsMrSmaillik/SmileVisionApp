@@ -15,6 +15,24 @@
   .glass-input {
     @apply bg-white/20 focus:bg-white/30 backdrop-blur-md border border-white/30 shadow-inner outline-none transition-all duration-300 placeholder:text-white/60;
   }
+  .markdown-body p {
+    @apply mb-4 last:mb-0;
+  }
+  .markdown-body a {
+    @apply text-blue-200 underline hover:text-blue-100 transition-colors;
+  }
+  .markdown-body strong {
+    @apply font-bold text-white;
+  }
+  .markdown-body em {
+    @apply italic text-white/90;
+  }
+  .markdown-body ul {
+    @apply list-disc list-inside mb-4;
+  }
+  .markdown-body ol {
+    @apply list-decimal list-inside mb-4;
+  }
 }
 
 body {
