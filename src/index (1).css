@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Russo One", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/20 backdrop-blur-md border border-white/30 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)];
+  }
+  .glass-button {
+    @apply bg-white/30 hover:bg-white/40 backdrop-blur-md border border-white/40 shadow-[0_4px_16px_0_rgba(31,38,135,0.1)] transition-all duration-300 active:scale-95;
+  }
+  .glass-input {
+    @apply bg-white/20 focus:bg-white/30 backdrop-blur-md border border-white/30 shadow-inner outline-none transition-all duration-300 placeholder:text-white/60;
+  }
+  .markdown-body p {
+    @apply mb-4 last:mb-0 leading-relaxed;
+  }
+  .markdown-body a {
+    @apply text-blue-300 underline hover:text-blue-200 transition-colors;
+  }
+  .markdown-body strong {
+    @apply font-bold text-white;
+  }
+  .markdown-body em {
+    @apply italic text-white/90;
+  }
+  .markdown-body ul {
+    @apply list-disc ml-6 mb-4 space-y-1;
+  }
+  .markdown-body ol {
+    @apply list-decimal ml-6 mb-4 space-y-1;
+  }
+  .markdown-body h1 {
+    @apply text-3xl font-bold mb-4 mt-6 first:mt-0;
+  }
+  .markdown-body h2 {
+    @apply text-2xl font-bold mb-3 mt-5 first:mt-0;
+  }
+  .markdown-body h3 {
+    @apply text-xl font-bold mb-2 mt-4 first:mt-0;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+body {
+  @apply text-white;
+}
