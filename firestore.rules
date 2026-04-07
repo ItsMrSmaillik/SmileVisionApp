@@ -37,7 +37,7 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isAuthenticated() && request.auth.token.email == "matvey.zingaliuk@gmail.com" && request.auth.token.email_verified == true;
+      return isAuthenticated() && (request.auth.token.email == "matvey.zingaliuk@gmail.com" || request.auth.token.email == "smilevision.contest@gmail.com");
     }
 
     function hasOnlyAllowedFields(fields) {
@@ -52,39 +52,42 @@ service cloud.firestore {
     }
 
     function isValidNewsPost(data) {
-      return hasOnlyAllowedFields(['content', 'createdAt', 'imageUrl']) &&
-             data.content is string && data.content.size() > 0 && data.content.size() <= 500 &&
+      return hasOnlyAllowedFields(['title', 'content', 'createdAt', 'imageUrl']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.content is string && data.content.size() > 0 && data.content.size() <= 5000 &&
              (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 2000)) &&
              data.createdAt is timestamp;
     }
 
     function isValidParticipant(data) {
-      return hasOnlyAllowedFields(['name', 'country', 'song', 'emoji', 'createdAt', 'imageUrl']) &&
+      return hasOnlyAllowedFields(['email', 'name', 'country', 'song', 'emoji', 'status', 'createdAt', 'imageUrl']) &&
+             data.email is string && data.email.size() > 0 && data.email.size() <= 200 &&
              data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
              data.country is string && data.country.size() > 0 && data.country.size() <= 100 &&
              data.song is string && data.song.size() > 0 && data.song.size() <= 100 &&
              data.emoji is string && data.emoji.size() > 0 && data.emoji.size() <= 20 &&
+             (!('status' in data) || (data.status in ['pending', 'approved', 'rejected'])) &&
              (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 2000)) &&
              data.createdAt is timestamp;
     }
 
     match /appState/{docId} {
-      allow read: if true; // Publicly readable so everyone sees the theme
+      allow read: if true;
       allow create: if isAdmin() && isValidAppState(request.resource.data);
       allow update: if isAdmin() && isValidAppState(request.resource.data);
       allow delete: if false;
     }
 
     match /news/{postId} {
-      allow read: if true; // Publicly readable
+      allow read: if true;
       allow create: if isAdmin() && isValidNewsPost(request.resource.data);
-      allow update: if false; // News posts are immutable
+      allow update: if isAdmin() && isValidNewsPost(request.resource.data);
       allow delete: if isAdmin();
     }
 
     match /participants/{participantId} {
-      allow read: if true; // Publicly readable
-      allow create: if isAdmin() && isValidParticipant(request.resource.data);
+      allow read: if true;
+      allow create: if (isAdmin() || (isAuthenticated() && request.resource.data.status == 'pending')) && isValidParticipant(request.resource.data);
       allow update: if isAdmin() && isValidParticipant(request.resource.data);
       allow delete: if isAdmin();
     }
